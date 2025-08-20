@@ -3,11 +3,39 @@
   "compilerOptions": {
     "strict": true,
     "jsx": "react-jsx",
-
     "baseUrl": ".",
     "paths": {
-      "~/*": ["*"]
+      "~/*": [
+        "*"
+      ],
+      "@src/*": [
+        "./src/*"
+      ],
+      "@constants/*": [
+        "./src/constants/*"
+      ],
+      "@components/*": [
+        "./src/components/*"
+      ],
+      "@hooks/*": [
+        "./src/hooks/*"
+      ],
+      "@utils/*": [
+        "./src/utils/*"
+      ],
+      "@store/*": [
+        "./src/store/*"
+      ],
+      "@assets/*": [
+        "./assets/*"
+      ]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts",
+    "nativewind-env.d.ts"
+  ]
 }
