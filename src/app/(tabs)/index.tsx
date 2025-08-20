@@ -25,7 +25,7 @@ import GoalItems from '~/src/components/GoalItems';
 import { useStreakContext } from '~/src/providers/streakContext';
 import EmptyTask from '~/src/assets/svgs/EmptyTask';
 import { STORAGE_KEYS } from '~/src/constants/asyncKeys';
-import { getValueFor } from '~/src/utils/secureStorage';
+import { getValueFor, save } from '~/src/utils/secureStorage';
 import { useFocusEffect } from '@react-navigation/native';
 // Define types
 type Priority = 'low' | 'medium' | 'high';
@@ -54,7 +54,7 @@ export default function Home() {
   const [showReward, setShowReward] = useState(false);
   const { location, errorMsg } = useCurrentLocation();
   const [selectedPriority, setSelectedPriority] = useState<'all' | Priority>('all');
-
+  const [isNewUser, setIsNewUser] = useState(false);
   const { place } = useReverseGeocoding(location?.lat ?? null, location?.lng ?? null);
   const { sizes } = useResponsive();
   const { user } = useAuth();
@@ -77,6 +77,28 @@ export default function Home() {
     };
     init();
   }, []);
+
+  useEffect(() => {
+    const checkNewUserStatus = async () => {
+      try {
+        const hasSeenWelcome = await getValueFor(STORAGE_KEYS.HAS_SEEN_WELCOME);
+        const isFirstVisit = !hasSeenWelcome;
+
+        if (isFirstVisit && user) {
+          setIsNewUser(true);
+          setShowSplash(true);
+          // Mark that user has seen the welcome screen
+          await save(STORAGE_KEYS.HAS_SEEN_WELCOME, 'true');
+        }
+      } catch (error) {
+        console.error('Error checking new user status:', error);
+      }
+    };
+
+    if (user) {
+      checkNewUserStatus();
+    }
+  }, [user]);
 
   useFocusEffect(
     useCallback(() => {
@@ -164,7 +186,7 @@ export default function Home() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: tabBarHeight * 1.5 }}>
         <AppText className="font-INTER_REGULAR text-lg text-TEXT_PRIMARY">
-          {getTimeOfDay()} {user.name || 'Farouq'} !
+          {getTimeOfDay()} {user.email} !
         </AppText>
         <AppText className="font-INTER_BOLD text-2xl text-TEXT_PRIMARY">
           You Got This,{' '}
@@ -214,8 +236,8 @@ export default function Home() {
       <LottieModal
         visible={showSplash}
         animation={CoinDrop}
-        title="Welcome Back!"
-        subtitle="Let's Growify today 🌱"
+        title="You've created your account!"
+        subtitle="You get 300pts for creating account and 5 pts for each day streak, and 10pts for each completed task🌱"
         loop={false}
         onClose={() => setShowSplash(false)}
       />

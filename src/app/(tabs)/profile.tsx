@@ -19,13 +19,14 @@ import { APP_COLOR } from '~/src/constants/Color';
 
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useAuth } from '~/src/hooks/useAuth';
+import Toast from 'react-native-toast-message';
 
 const Profile = () => {
   const insets = useSafeAreaInsets();
 
   const { sizes, device } = useResponsive();
   const isSmallScreen = device.height < 700;
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const tabBarHeight = useBottomTabBarHeight();
   const menuItems = [
     { id: 1, label: 'Personal Info' },
@@ -60,7 +61,7 @@ const Profile = () => {
           <View className="items-center">
             <ProfileWithCamera width={120} height={120} />
             <AppText className="mt-6 font-INTER_MEDIUM text-base text-[#1A1A1A]">
-              {user.name}
+              {user.email}
             </AppText>
           </View>
 
@@ -87,8 +88,23 @@ const Profile = () => {
             className={`font-INTER_REGULAR text-[#B11B20] ${
               isSmallScreen ? 'text-sm' : 'text-base'
             }`}
-            // onPress={ }
-          >
+            onPress={async () => {
+              try {
+                await logout();
+                Toast.show({
+                  type: 'success',
+                  text1: 'Logged Out',
+                  text2: 'See you next time!',
+                });
+                // Navigation will be handled automatically by auth state change
+              } catch (error) {
+                Toast.show({
+                  type: 'error',
+                  text1: 'Logout Failed',
+                  text2: 'Please try again.',
+                });
+              }
+            }}>
             Log out
           </AppText>
           <AppText

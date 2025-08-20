@@ -1,6 +1,7 @@
 import { StyleSheet, View, SafeAreaView, Image } from 'react-native';
 import React, { useState } from 'react';
-import AppIconSmall from '~/src/assets/svgs/AppIconSmall';
+import Toast from 'react-native-toast-message';
+
 import AppText from '~/src/components/AppText';
 import { useResponsive } from '~/src/components/ResponsiveProvider';
 import AppInput from '~/src/components/AppInput';
@@ -16,15 +17,17 @@ import { StatusBar } from 'expo-status-bar';
 
 const Signup = () => {
   const { sizes } = useResponsive();
-  const { login } = useAuth();
+  const { signup, loading } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState({ email: '', password: '' });
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [errors, setErrors] = useState({ email: '', password: '', confirmPassword: '' });
+  const [acceptTerms, setAcceptTerms] = useState(false);
 
   const validateForm = () => {
     let valid = true;
-    const newErrors = { email: '', password: '' };
+    const newErrors = { email: '', password: '', confirmPassword: '' };
 
     if (!email.trim()) {
       newErrors.email = 'Email is required';
@@ -37,18 +40,84 @@ const Signup = () => {
     if (!password.trim()) {
       newErrors.password = 'Password is required';
       valid = false;
+    } else if (password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+      valid = false;
+    }
+
+    if (!confirmPassword.trim()) {
+      newErrors.confirmPassword = 'Please confirm your password';
+      valid = false;
+    } else if (password !== confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+      valid = false;
     }
 
     setErrors(newErrors);
     return valid;
   };
 
-  const handleLogin = () => {
+  const handleSignup = async () => {
     if (validateForm()) {
-      login({ email, password }).then(() => {
-        router.replace('/(auth)/signupOnboarding');
-      });
+      try {
+        const { error, data } = await signup(email, password);
+
+        if (error) {
+          // Handle different types of signup errors
+          let errorMessage = 'Please try again.';
+
+          if (error.message?.includes('already registered')) {
+            errorMessage = 'An account with this email already exists.';
+          } else if (error.message?.includes('Password should be at least')) {
+            errorMessage = 'Password must be at least 6 characters long.';
+          } else if (error.message?.includes('Invalid email')) {
+            errorMessage = 'Please enter a valid email address.';
+          } else if (error.message?.includes('signup is disabled')) {
+            errorMessage = 'Account creation is temporarily disabled.';
+          } else if (error.message) {
+            errorMessage = error.message;
+          }
+
+          Toast.show({
+            type: 'error',
+            text1: 'Signup Failed',
+            text2: errorMessage,
+          });
+        } else {
+          // Check if email confirmation is required
+          if (!data.session && data.user && !data.user.email_confirmed_at) {
+            Toast.show({
+              type: 'info',
+              text1: 'Check Your Email',
+              text2: 'We sent you a confirmation link. Please check your email.',
+            });
+            // Navigate to email confirmation screen or back to login
+            router.replace('/(auth)/login');
+          } else {
+            // Account created and logged in immediately
+            Toast.show({
+              type: 'success',
+              text1: 'Account Created!',
+              text2: 'Welcome to the app!',
+            });
+
+            // Navigate to onboarding
+            router.replace('/(auth)/signupOnboarding');
+          }
+        }
+      } catch (err) {
+        console.error('Signup error:', err);
+        Toast.show({
+          type: 'error',
+          text1: 'Signup Failed',
+          text2: 'An unexpected error occurred. Please try again.',
+        });
+      }
     }
+  };
+
+  const toggleAcceptTerms = () => {
+    setAcceptTerms(!acceptTerms);
   };
 
   return (
@@ -86,8 +155,12 @@ const Signup = () => {
                 placeholder="Enter your email"
                 value={email}
                 onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoComplete="email"
                 isRequired
                 errorMessage={errors.email}
+                editable={!loading}
               />
               <Divider height={sizes.spacing.padding} />
 
@@ -98,24 +171,57 @@ const Signup = () => {
                 secureTextEntry
                 value={password}
                 onChangeText={setPassword}
+                autoCapitalize="none"
+                autoComplete="password-new"
                 customShowIcon={<EyeOpenIcon width={20} height={20} />}
                 customHideIcon={<EyeCloseIcon width={20} height={20} />}
                 isRequired
                 errorMessage={errors.password}
+                editable={!loading}
               />
+              <Divider height={sizes.spacing.padding} />
+
+              <AppInput
+                label="Confirm Password"
+                placeholder="*******"
+                passwordToggle
+                secureTextEntry
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                autoCapitalize="none"
+                autoComplete="password-new"
+                customShowIcon={<EyeOpenIcon width={20} height={20} />}
+                customHideIcon={<EyeCloseIcon width={20} height={20} />}
+                isRequired
+                errorMessage={errors.confirmPassword}
+                editable={!loading}
+              />
+
+              {/* Terms and Conditions */}
             </View>
 
             {/* Footer Section */}
             <View>
-              <Divider height={sizes.spacing.xxl} />
-              <AppButton label="Signup" onPress={handleLogin} />
+              <AppButton
+                label={'Signup'}
+                onPress={handleSignup}
+                disabled={loading}
+                loading={loading}
+                // Add opacity styling for disabled state if your AppButton supports it
+                style={{ opacity: 1 }}
+              />
               <Divider height={sizes.spacing.sm} />
               <AppText
                 fontSize={sizes.fonts.medium}
-                className="text-center font-INTER_REGULAR text-[#B3B3B3]">
+                className="text-center font-INTER_REGULAR text-[#B3B3B3]"
+                style={{ opacity: loading ? 0.5 : 1 }}>
                 Already have an account?{' '}
                 <AppText
-                  onPress={() => router.navigate('/(auth)/login')}
+                  onPress={() => {
+                    if (!loading) {
+                      router.navigate('/(auth)/login');
+                    }
+                  }}
                   fontSize={sizes.fonts.body}
                   className="font-INTER_MEDIUM text-SUCCESS">
                   Login
