@@ -17,20 +17,9 @@ interface TabConfig {
   title: string;
   icon: React.ReactNode | React.ComponentProps<typeof FontAwesome>['name'];
 }
-interface CustomBottomTabProps extends BottomTabBarProps {
-  isSheetOpen: boolean;
-}
 
-const CustomBottomTab: React.FC<CustomBottomTabProps> = ({
-  state,
-  descriptors,
-  navigation,
-  isSheetOpen,
-}) => {
+const CustomBottomTab: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation }) => {
   const insets = useSafeAreaInsets();
-  if (isSheetOpen) {
-    return null; // Don't render anything if the sheet is open
-  }
 
   interface TabConfig {
     name: string;
@@ -139,7 +128,7 @@ const styles = StyleSheet.create({
     minHeight: 44,
   },
   activeTab: {
-    backgroundColor: APP_COLOR.PRIMARY_COLOR,
+    backgroundColor: APP_COLOR.PRIMARY,
   },
   inactiveTab: {
     backgroundColor: 'transparent',

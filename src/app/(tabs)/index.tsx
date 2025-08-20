@@ -1,6 +1,8 @@
 import { Stack } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { Button, ScrollView, StyleSheet, View } from 'react-native';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+
 import LottieModal from '~/src/components/AnimationModal';
 import CoinDrop from '~/src/assets/animations/coindrop.json';
 import Fire from '~/src/assets/animations/Fire.json';
@@ -54,7 +56,7 @@ export default function Home() {
   // ✅ Filter tasks based on selected priority
   const filteredTasks =
     selectedPriority === 'all' ? tasks : tasks.filter((task) => task.priority === selectedPriority);
-
+  const tabBarHeight = useBottomTabBarHeight();
   return (
     <View className="flex-1 bg-white px-4">
       <View className="flex-row items-center justify-between">
@@ -76,7 +78,9 @@ export default function Home() {
         </View>
       </View>
       <Divider height={sizes.spacing.lg} />
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: tabBarHeight * 1.5 }}>
         <AppText className="font-INTER_REGULAR text-lg text-TEXT_PRIMARY">
           {getTimeOfDay()} {user.name || 'Farouq'} !
         </AppText>
