@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import { Button, ScrollView, StyleSheet, View } from 'react-native';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 
@@ -28,7 +28,7 @@ const tasks = [
   { id: '2', label: 'Reading', priority: 'medium', status: 'pending' },
   { id: '3', label: 'Yoga', priority: 'high', status: 'done' },
   { id: '4', label: 'Meditation', priority: 'low', status: 'pending' },
-  { id: '5', label: 'Meditation', priority: 'high', status: 'pending' },
+  { id: '5', label: 'Meditations', priority: 'high', status: 'pending' },
 ];
 export default function Home() {
   const { streak, coinsEarnedToday, checkStreak, coins } = useStreakContext();
@@ -105,15 +105,14 @@ export default function Home() {
 
         <AppText className="font-INTER_SEMIBOLD text-lg text-TEXT_SECONDARY">Ongoing</AppText>
         {filteredTasks.map((task) => (
-          <>
+          <Fragment key={task.id.toString()}>
             <Divider height={sizes.spacing.lg} />
             <GoalItems
-              key={task.id}
               label={task.label}
               priority={task.priority as 'low' | 'medium' | 'high'}
               status={task.status as 'done' | 'pending'}
             />
-          </>
+          </Fragment>
         ))}
         <Button title="Test Fire Reward" onPress={() => setShowReward(true)} />
       </ScrollView>
