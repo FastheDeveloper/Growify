@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, TouchableOpacity } from 'react-native';
+import { View, TouchableOpacity, Pressable } from 'react-native';
 import AppText from './AppText';
+import { router } from 'expo-router';
 
 const PRIORITIES = [
   { id: 'all', label: 'All', color: 'PRIMARY' },
@@ -56,12 +57,12 @@ export default function GoalsFilter({ onChange }: GoalsFilterProps) {
         })}
 
         {/* New Goal Button */}
-        <View className="mx-1 items-center">
+        <Pressable onPress={() => router.navigate('/CreateGoal')} className="mx-1 items-center">
           <View className="aspect-square w-12 items-center justify-center rounded-full bg-PRIMARY">
             <AppText className="text-3xl text-white">+</AppText>
           </View>
           <AppText className="text-md mt-2 font-INTER_SEMIBOLD text-TEXT_PRIMARY">New Goal</AppText>
-        </View>
+        </Pressable>
       </View>
     </View>
   );

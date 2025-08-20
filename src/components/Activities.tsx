@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, ScrollView } from 'react-native';
+import { View, ScrollView, TouchableOpacity } from 'react-native';
+import { router } from 'expo-router';
 import AppText from './AppText';
 
 import Yoga from '~/src/assets/svgs/Yoga';
@@ -12,26 +13,54 @@ type Activity = {
   id: string;
   label: string;
   Icon: React.FC<any>;
+  // Map to the labels used in CreateTask component
+  taskLabel?: string;
 };
 
 const ACTIVITIES: Activity[] = [
-  { id: 'yoga', label: 'Yoga', Icon: Yoga },
-  { id: 'exercise', label: 'Exercise', Icon: Gym },
-  { id: 'cycling', label: 'Cycling', Icon: Cycling },
-  { id: 'reading', label: 'Reading', Icon: Book },
-  { id: 'more', label: 'More', Icon: More },
+  { id: 'yoga', label: 'Yoga', Icon: Yoga, taskLabel: 'Yoga' },
+  { id: 'exercise', label: 'Exercise', Icon: Gym, taskLabel: 'Lifting' }, // Maps to "Lifting" in CreateTask
+  { id: 'cycling', label: 'Cycling', Icon: Cycling, taskLabel: 'Cycling' },
+  { id: 'reading', label: 'Reading', Icon: Book, taskLabel: 'Reading' },
+  { id: 'more', label: 'More', Icon: More }, // No taskLabel - won't navigate
 ];
 
-const ActivityItem = ({ label, Icon }: { label: string; Icon: React.FC<any> }) => (
-  <View className="mr-6 items-center">
-    <View className="rounded-full bg-PRIMARY_LIGHT p-5">
-      <Icon width={16} height={16} />
+const ActivityItem = ({
+  label,
+  Icon,
+  onPress,
+}: {
+  label: string;
+  Icon: React.FC<any>;
+  onPress: () => void;
+}) => (
+  <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
+    <View className="mr-6 items-center">
+      <View className="rounded-full bg-PRIMARY_LIGHT p-5">
+        <Icon width={16} height={16} />
+      </View>
+      <AppText className="mt-2 font-INTER_SEMIBOLD text-TEXT_SECONDARY">{label}</AppText>
     </View>
-    <AppText className="mt-2 font-INTER_SEMIBOLD text-TEXT_SECONDARY">{label}</AppText>
-  </View>
+  </TouchableOpacity>
 );
 
 export default function ActivitiesRow() {
+  const handleActivityPress = (activity: Activity) => {
+    // Don't navigate if it's the "More" button or no taskLabel is defined
+    if (activity.id === 'more' || !activity.taskLabel) {
+      console.log('More button clicked - no navigation');
+      return;
+    }
+
+    // Navigate to CreateGoal screen with the selected label as a parameter
+    router.push({
+      pathname: '/CreateGoal',
+      params: {
+        preselectedLabel: activity.taskLabel,
+      },
+    });
+  };
+
   return (
     <ScrollView
       horizontal
@@ -42,7 +71,12 @@ export default function ActivitiesRow() {
         paddingHorizontal: 16,
       }}>
       {ACTIVITIES.map((activity) => (
-        <ActivityItem key={activity.id} label={activity.label} Icon={activity.Icon} />
+        <ActivityItem
+          key={activity.id}
+          label={activity.label}
+          Icon={activity.Icon}
+          onPress={() => handleActivityPress(activity)}
+        />
       ))}
     </ScrollView>
   );

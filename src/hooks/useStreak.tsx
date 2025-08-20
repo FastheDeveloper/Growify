@@ -74,19 +74,61 @@ export const useStreak = () => {
     }
   }, []);
 
-  const completeTask = useCallback(async () => {
-    const storedCoins = parseInt((await getValueFor(STORAGE_KEYS.COIN_BALANCE)) || '0', 10);
-    const updatedCoins = storedCoins + 1;
+  const completeTask = async (id: string) => {
+    // read existing tasks
+    const stored = await getValueFor(STORAGE_KEYS.TASKS);
+    const tasks = stored ? JSON.parse(stored) : [];
 
-    await save(STORAGE_KEYS.COIN_BALANCE, String(updatedCoins));
-    setCoins(updatedCoins);
+    // update the task
+    const updated = tasks.map((task: any) => (task.id === id ? { ...task, status: 'done' } : task));
 
-    return updatedCoins;
-  }, []);
+    // save updated tasks
+    await save(STORAGE_KEYS.TASKS, JSON.stringify(updated));
+
+    // reward coins
+    const coinStored = await getValueFor(STORAGE_KEYS.COIN_BALANCE);
+    const currentCoins = coinStored ? parseInt(coinStored, 10) : 0;
+    const newBalance = currentCoins + 10;
+
+    await save(STORAGE_KEYS.COIN_BALANCE, newBalance.toString());
+
+    return newBalance;
+  };
+
+  const markTaskDone = async (id: string) => {
+    const stored = await getValueFor(STORAGE_KEYS.TASKS);
+    const tasks = stored ? JSON.parse(stored) : [];
+
+    const updated = tasks.map((task: any) => (task.id === id ? { ...task, status: 'done' } : task));
+
+    await save(STORAGE_KEYS.TASKS, JSON.stringify(updated));
+    return updated;
+  };
+
+  /** ✅ claim reward and remove the task */
+  const claimReward = async (id: string) => {
+    const stored = await getValueFor(STORAGE_KEYS.TASKS);
+    const tasks = stored ? JSON.parse(stored) : [];
+
+    // remove the completed task
+    const remaining = tasks.filter((task: any) => task.id !== id);
+
+    await save(STORAGE_KEYS.TASKS, JSON.stringify(remaining));
+
+    // reward coins
+    const coinStored = await getValueFor(STORAGE_KEYS.COIN_BALANCE);
+    const currentCoins = coinStored ? parseInt(coinStored, 10) : 0;
+    const newBalance = currentCoins + 10;
+
+    await save(STORAGE_KEYS.COIN_BALANCE, newBalance.toString());
+    setCoins(newBalance);
+
+    return newBalance;
+  };
 
   useEffect(() => {
     checkStreak(); // run once on mount
   }, [checkStreak]);
 
-  return { streak, coins, coinsEarnedToday, checkStreak, completeTask };
+  return { streak, coins, coinsEarnedToday, checkStreak, completeTask, markTaskDone, claimReward };
 };

@@ -33,11 +33,11 @@ const CustomBottomTab: React.FC<BottomTabBarProps> = ({ state, descriptors, navi
       title: 'Home',
       icon: (color) => <HomeIcon width={18} height={18} color={color} />,
     },
-    {
-      name: 'tasks',
-      title: 'Tasks',
-      icon: (color) => <TasksIcon width={18} height={18} color={color} />,
-    },
+    // {
+    //   name: 'tasks',
+    //   title: 'Tasks',
+    //   icon: (color) => <TasksIcon width={18} height={18} color={color} />,
+    // },
     {
       name: 'profile',
       title: 'Profile',

@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router';
-import { useState, useEffect, Fragment } from 'react';
+import { useState, useEffect, Fragment, useCallback } from 'react';
 import { Button, ScrollView, StyleSheet, View } from 'react-native';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 
@@ -24,6 +24,9 @@ import GoalsFilter from '~/src/components/GoalsFilter';
 import GoalItems from '~/src/components/GoalItems';
 import { useStreakContext } from '~/src/providers/streakContext';
 import EmptyTask from '~/src/assets/svgs/EmptyTask';
+import { STORAGE_KEYS } from '~/src/constants/asyncKeys';
+import { getValueFor } from '~/src/utils/secureStorage';
+import { useFocusEffect } from '@react-navigation/native';
 // Define types
 type Priority = 'low' | 'medium' | 'high';
 type Status = 'done' | 'pending';
@@ -45,17 +48,27 @@ const tasks: Task[] = [
 ];
 
 export default function Home() {
-  const { streak, coinsEarnedToday, checkStreak, coins } = useStreakContext();
+  const { streak, coinsEarnedToday, checkStreak, coins, markTaskDone, claimReward } =
+    useStreakContext();
   const [showSplash, setShowSplash] = useState(false);
   const [showReward, setShowReward] = useState(false);
   const { location, errorMsg } = useCurrentLocation();
+  const [selectedPriority, setSelectedPriority] = useState<'all' | Priority>('all');
+
   const { place } = useReverseGeocoding(location?.lat ?? null, location?.lng ?? null);
   const { sizes } = useResponsive();
   const { user } = useAuth();
 
+  // ✅ load tasks from SecureStorage
+  const [tasks, setTasks] = useState<Task[]>([]);
+  // const [selectedPriority, setSelectedPriority] = useState<'all' | Priority>('all');
+
   useEffect(() => {
     const init = async () => {
       const reward = await checkStreak(); // returns coins earned for today
+      console.log('====================================');
+      console.log(reward);
+      console.log('====================================');
       if (reward > 0) {
         setShowReward(true); // show streak fire animation
       } else {
@@ -65,10 +78,57 @@ export default function Home() {
     init();
   }, []);
 
+  useFocusEffect(
+    useCallback(() => {
+      const loadTasks = async () => {
+        const stored = await getValueFor(STORAGE_KEYS.TASKS);
+        setTasks(stored ? JSON.parse(stored) : []);
+      };
+
+      loadTasks();
+    }, [])
+  );
+
+  const handleMarkTaskDone = async (id: string) => {
+    try {
+      // Update UI immediately for instant feedback
+      setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status: 'done' as Status } : t)));
+
+      // Then update the backend
+      await markTaskDone(id);
+      console.log(`Task ${id} marked as done`);
+    } catch (err) {
+      console.error('Error marking task done:', err);
+      // Revert UI changes if backend call fails
+      setTasks((prev) =>
+        prev.map((t) => (t.id === id ? { ...t, status: 'pending' as Status } : t))
+      );
+    }
+  };
+
+  // ✅ Handle claim reward - update UI immediately then call backend
+  const handleClaimReward = async (id: string) => {
+    try {
+      // Remove task from UI immediately for instant feedback
+      setTasks((prev) => prev.filter((t) => t.id !== id));
+
+      // Then update the backend
+      const newBalance = await claimReward(id);
+      console.log(`Reward claimed! New balance: ${newBalance}`);
+    } catch (err) {
+      console.error('Error claiming reward:', err);
+      // Revert UI changes if backend call fails - restore the task
+      const stored = await getValueFor(STORAGE_KEYS.TASKS);
+      const allTasks = stored ? JSON.parse(stored) : [];
+      const restoredTask = allTasks.find((task: Task) => task.id === id);
+      if (restoredTask) {
+        setTasks((prev) => [...prev, restoredTask]);
+      }
+    }
+  };
   // ✅ Task logic
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter((task) => task.status === 'done').length;
-  const [selectedPriority, setSelectedPriority] = useState<'all' | Priority>('all');
 
   const filteredTasks =
     selectedPriority === 'all' ? tasks : tasks.filter((task) => task.priority === selectedPriority);
@@ -82,8 +142,10 @@ export default function Home() {
       <View className="flex-row items-center justify-between">
         <View className="flex-row items-center gap-1">
           <LocationIcon width={16} height={16} />
-          <AppText className="font-INTER_SEMIBOLD text-sm text-PRIMARY_DARK">{place?.city}</AppText>
-          <CavetDownIcon height={18} width={16} />
+          <AppText className="font-INTER_SEMIBOLD text-sm text-PRIMARY_DARK">
+            {place?.city || 'Loading location'}
+          </AppText>
+          <CavetDownIcon height={20} width={16} />
         </View>
 
         <View className="flex-row items-center gap-8">
@@ -129,6 +191,9 @@ export default function Home() {
                 label={task.label}
                 priority={task.priority as 'low' | 'medium' | 'high'}
                 status={task.status as 'done' | 'pending'}
+                id={task.id.toString()}
+                onMarkDone={handleMarkTaskDone}
+                onClaimReward={handleClaimReward}
               />
             </Fragment>
           ))
@@ -143,7 +208,7 @@ export default function Home() {
           </View>
         )}
 
-        <Button title="Test Fire Reward" onPress={() => setShowReward(true)} />
+        {/* <Button title="Test Fire Reward" onPress={() => setShowReward(true)} /> */}
       </ScrollView>
       {/* Splash animation for new day login */}
       <LottieModal

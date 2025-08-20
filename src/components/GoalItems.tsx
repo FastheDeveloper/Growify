@@ -19,9 +19,12 @@ type Priority = 'low' | 'medium' | 'high';
 type Status = 'done' | 'pending';
 
 type GoalItemProps = {
+  id: string;
   priority: Priority;
   status: Status;
   label: string;
+  onMarkDone: (id: string) => Promise<void>;
+  onClaimReward: (id: string) => Promise<void>;
 };
 
 const PRIORITY_STYLES = {
@@ -53,14 +56,34 @@ const LABEL_ICONS: Record<string, React.ReactNode> = {
   Meditation: <Meditator width={64} height={64} />, // example, reuse Yogi
 };
 
-const GoalItems: React.FC<GoalItemProps> = ({ priority, status, label }) => {
+const GoalItems: React.FC<GoalItemProps> = ({
+  id,
+  priority,
+  status,
+  label,
+  onMarkDone,
+  onClaimReward,
+}) => {
   const priorityStyle = PRIORITY_STYLES[priority];
-  const { coins, completeTask } = useStreakContext();
-  const handleTaskComplete = () => {
-    completeTask().then((newBalance) => {
-      console.log('New coin balance:', newBalance);
-    });
+
+  const handleMarkAsDone = async () => {
+    try {
+      await onMarkDone(id);
+      console.log(`Task ${id} marked as done`);
+    } catch (err) {
+      console.error('Error marking task done:', err);
+    }
   };
+
+  const handleClaimReward = async () => {
+    try {
+      const newBalance = await onClaimReward(id);
+      console.log(`Reward claimed! New balance: ${newBalance}`);
+    } catch (err) {
+      console.error('Error claiming reward:', err);
+    }
+  };
+
   return (
     <View className={`rounded-2xl px-4 py-2 ${priorityStyle.bg}`}>
       <View className="flex-row items-center justify-between">
@@ -112,12 +135,12 @@ const GoalItems: React.FC<GoalItemProps> = ({ priority, status, label }) => {
                   label="Claim Reward"
                   className="bg-white"
                   textStyle={{ color: 'black' }}
-                  onPress={handleTaskComplete}
+                  onPress={handleClaimReward}
                 />
                 {/* <AppButton label="Completed" /> */}
               </>
             ) : (
-              <AppButton label="Mark as Done" />
+              <AppButton label="Mark as Done" onPress={handleMarkAsDone} />
             )}
           </View>
         </View>
