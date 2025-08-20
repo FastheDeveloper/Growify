@@ -23,13 +23,27 @@ import ActivitiesRow from '~/src/components/Activities';
 import GoalsFilter from '~/src/components/GoalsFilter';
 import GoalItems from '~/src/components/GoalItems';
 import { useStreakContext } from '~/src/providers/streakContext';
-const tasks = [
+import EmptyTask from '~/src/assets/svgs/EmptyTask';
+// Define types
+type Priority = 'low' | 'medium' | 'high';
+type Status = 'done' | 'pending';
+
+type Task = {
+  id: string;
+  label: string;
+  priority: Priority;
+  status: Status;
+};
+
+// ✅ Strongly type tasks (empty or seeded)
+const tasks: Task[] = [
   { id: '1', label: 'Cycling', priority: 'low', status: 'done' },
   { id: '2', label: 'Reading', priority: 'medium', status: 'pending' },
   { id: '3', label: 'Yoga', priority: 'high', status: 'done' },
   { id: '4', label: 'Meditation', priority: 'low', status: 'pending' },
   { id: '5', label: 'Meditations', priority: 'high', status: 'pending' },
 ];
+
 export default function Home() {
   const { streak, coinsEarnedToday, checkStreak, coins } = useStreakContext();
   const [showSplash, setShowSplash] = useState(false);
@@ -38,27 +52,30 @@ export default function Home() {
   const { place } = useReverseGeocoding(location?.lat ?? null, location?.lng ?? null);
   const { sizes } = useResponsive();
   const { user } = useAuth();
+
   useEffect(() => {
     const init = async () => {
       const reward = await checkStreak(); // returns coins earned for today
       if (reward > 0) {
         setShowReward(true); // show streak fire animation
       } else {
-        // check if it's a new day and just show splash
-        // setShowSplash(true);
+        // setShowSplash(true); // optional splash
       }
     };
     init();
   }, []);
+
+  // ✅ Task logic
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter((task) => task.status === 'done').length;
-  const [selectedPriority, setSelectedPriority] = useState<'all' | 'high' | 'medium' | 'low'>(
-    'all'
-  );
+  const [selectedPriority, setSelectedPriority] = useState<'all' | Priority>('all');
 
-  // ✅ Filter tasks based on selected priority
   const filteredTasks =
     selectedPriority === 'all' ? tasks : tasks.filter((task) => task.priority === selectedPriority);
+
+  const emptyMessage =
+    totalTasks === 0 ? 'No tasks created yet' : `No ${selectedPriority} priority tasks`;
+
   const tabBarHeight = useBottomTabBarHeight();
   return (
     <View className="flex-1 bg-white px-4">
@@ -104,16 +121,28 @@ export default function Home() {
         <Divider height={sizes.spacing.lg} />
 
         <AppText className="font-INTER_SEMIBOLD text-lg text-TEXT_SECONDARY">Ongoing</AppText>
-        {filteredTasks.map((task) => (
-          <Fragment key={task.id.toString()}>
-            <Divider height={sizes.spacing.lg} />
-            <GoalItems
-              label={task.label}
-              priority={task.priority as 'low' | 'medium' | 'high'}
-              status={task.status as 'done' | 'pending'}
-            />
-          </Fragment>
-        ))}
+        {filteredTasks.length > 0 ? (
+          filteredTasks.map((task) => (
+            <Fragment key={task.id.toString()}>
+              <Divider height={sizes.spacing.lg} />
+              <GoalItems
+                label={task.label}
+                priority={task.priority as 'low' | 'medium' | 'high'}
+                status={task.status as 'done' | 'pending'}
+              />
+            </Fragment>
+          ))
+        ) : (
+          <View className=" items-center justify-center">
+            <EmptyTask width={64} height={64} />
+            <Divider height={sizes.spacing.sm} />
+            <AppText className="text-center font-INTER_MEDIUM text-sm text-[#B3B3B3]">
+              No ongoing goal
+            </AppText>
+            <AppText className="text-center font-INTER_MEDIUM text-sm text-[#B3B3B3]">yet</AppText>
+          </View>
+        )}
+
         <Button title="Test Fire Reward" onPress={() => setShowReward(true)} />
       </ScrollView>
       {/* Splash animation for new day login */}
