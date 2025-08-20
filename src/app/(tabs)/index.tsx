@@ -38,15 +38,6 @@ type Task = {
   status: Status;
 };
 
-// ✅ Strongly type tasks (empty or seeded)
-const tasks: Task[] = [
-  { id: '1', label: 'Cycling', priority: 'low', status: 'done' },
-  { id: '2', label: 'Reading', priority: 'medium', status: 'pending' },
-  { id: '3', label: 'Yoga', priority: 'high', status: 'done' },
-  { id: '4', label: 'Meditation', priority: 'low', status: 'pending' },
-  { id: '5', label: 'Meditations', priority: 'high', status: 'pending' },
-];
-
 export default function Home() {
   const { streak, coinsEarnedToday, checkStreak, coins, markTaskDone, claimReward } =
     useStreakContext();
@@ -59,20 +50,14 @@ export default function Home() {
   const { sizes } = useResponsive();
   const { user } = useAuth();
 
-  // ✅ load tasks from SecureStorage
   const [tasks, setTasks] = useState<Task[]>([]);
-  // const [selectedPriority, setSelectedPriority] = useState<'all' | Priority>('all');
 
   useEffect(() => {
     const init = async () => {
-      const reward = await checkStreak(); // returns coins earned for today
-      console.log('====================================');
-      console.log(reward);
-      console.log('====================================');
+      const reward = await checkStreak();
+
       if (reward > 0) {
-        setShowReward(true); // show streak fire animation
-      } else {
-        // setShowSplash(true); // optional splash
+        setShowReward(true);
       }
     };
     init();
@@ -87,7 +72,7 @@ export default function Home() {
         if (isFirstVisit && user) {
           setIsNewUser(true);
           setShowSplash(true);
-          // Mark that user has seen the welcome screen
+
           await save(STORAGE_KEYS.HAS_SEEN_WELCOME, 'true');
         }
       } catch (error) {
@@ -128,7 +113,6 @@ export default function Home() {
     }
   };
 
-  // ✅ Handle claim reward - update UI immediately then call backend
   const handleClaimReward = async (id: string) => {
     try {
       // Remove task from UI immediately for instant feedback
@@ -148,7 +132,7 @@ export default function Home() {
       }
     }
   };
-  // ✅ Task logic
+
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter((task) => task.status === 'done').length;
 

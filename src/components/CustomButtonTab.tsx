@@ -6,8 +6,6 @@ import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { TabBarIcon } from './TabBarIcon';
 import HomeIcon from '../assets/svgs/HomeIcon';
-import TasksIcon from '../assets/svgs/Tasks';
-import ProfileIcon from '../assets/svgs/ProfileIcon';
 import ProfileTab from '../assets/svgs/ProfileTab';
 import { APP_COLOR } from '../constants/Color';
 import { FONT_NAMES } from '../constants/fontNames';
@@ -33,11 +31,7 @@ const CustomBottomTab: React.FC<BottomTabBarProps> = ({ state, descriptors, navi
       title: 'Home',
       icon: (color) => <HomeIcon width={18} height={18} color={color} />,
     },
-    // {
-    //   name: 'tasks',
-    //   title: 'Tasks',
-    //   icon: (color) => <TasksIcon width={18} height={18} color={color} />,
-    // },
+
     {
       name: 'profile',
       title: 'Profile',

@@ -1,21 +1,12 @@
 import { Pressable, ScrollView, StatusBar, StyleSheet, View } from 'react-native';
-import React, { useRef } from 'react';
 import { router } from 'expo-router';
 import AppHeader from '~/src/components/AppHeader';
 import ProfileWithCamera from '~/src/assets/svgs/ProfileWithCamera';
 import AppText from '~/src/components/AppText';
 
 import { Divider } from '~/src/components/Divider';
-import Footer from '~/src/components/Footer';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
-import AppButton from '~/src/components/AppButton';
-import { CustomOverlayBackground } from '../(auth)/confirmResetPassword';
 import { useResponsive } from '~/src/components/ResponsiveProvider';
-import { useBottomSheet } from '~/src/hooks/useBottomSheet';
-
-import PhoneSvg from '~/src/assets/svgs/PhoneSvg';
-import { APP_COLOR } from '~/src/constants/Color';
 
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useAuth } from '~/src/hooks/useAuth';

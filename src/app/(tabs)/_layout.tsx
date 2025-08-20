@@ -1,7 +1,4 @@
 import { Link, Redirect, Tabs } from 'expo-router';
-
-import { HeaderButton } from '../../components/HeaderButton';
-import { TabBarIcon } from '../../components/TabBarIcon';
 import CustomBottomTab from '~/src/components/CustomButtonTab';
 import { useAuth } from '~/src/hooks/useAuth';
 

@@ -13,16 +13,15 @@ type Activity = {
   id: string;
   label: string;
   Icon: React.FC<any>;
-  // Map to the labels used in CreateTask component
   taskLabel?: string;
 };
 
 const ACTIVITIES: Activity[] = [
   { id: 'yoga', label: 'Yoga', Icon: Yoga, taskLabel: 'Yoga' },
-  { id: 'exercise', label: 'Exercise', Icon: Gym, taskLabel: 'Lifting' }, // Maps to "Lifting" in CreateTask
+  { id: 'exercise', label: 'Exercise', Icon: Gym, taskLabel: 'Lifting' },
   { id: 'cycling', label: 'Cycling', Icon: Cycling, taskLabel: 'Cycling' },
   { id: 'reading', label: 'Reading', Icon: Book, taskLabel: 'Reading' },
-  { id: 'more', label: 'More', Icon: More }, // No taskLabel - won't navigate
+  { id: 'more', label: 'More', Icon: More },
 ];
 
 const ActivityItem = ({
@@ -46,13 +45,11 @@ const ActivityItem = ({
 
 export default function ActivitiesRow() {
   const handleActivityPress = (activity: Activity) => {
-    // Don't navigate if it's the "More" button or no taskLabel is defined
     if (activity.id === 'more' || !activity.taskLabel) {
       console.log('More button clicked - no navigation');
       return;
     }
 
-    // Navigate to CreateGoal screen with the selected label as a parameter
     router.push({
       pathname: '/CreateGoal',
       params: {
@@ -66,7 +63,7 @@ export default function ActivitiesRow() {
       horizontal
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={{
-        flexGrow: 1, // allow container to grow and center content
+        flexGrow: 1,
         justifyContent: 'center',
         paddingHorizontal: 16,
       }}>
