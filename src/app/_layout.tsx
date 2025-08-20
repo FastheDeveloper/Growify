@@ -8,6 +8,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { AuthContextProvider } from '../hooks/useAuth';
 import { BottomSheetProvider } from '../hooks/useBottomSheet';
 import { Stack } from 'expo-router';
+import { StreakProvider } from '../providers/streakContext';
 
 SplashScreen.hideAsync();
 const toastConfig = {
@@ -48,12 +49,14 @@ export default function RootLayout() {
   return (
     <KeyboardProvider>
       <AuthContextProvider>
-        <ResponsiveProvider>
-          <BottomSheetProvider>
-            <AppContent />
-            <Toast config={toastConfig} />
-          </BottomSheetProvider>
-        </ResponsiveProvider>
+        <StreakProvider>
+          <ResponsiveProvider>
+            <BottomSheetProvider>
+              <AppContent />
+              <Toast config={toastConfig} />
+            </BottomSheetProvider>
+          </ResponsiveProvider>
+        </StreakProvider>
       </AuthContextProvider>
     </KeyboardProvider>
   );

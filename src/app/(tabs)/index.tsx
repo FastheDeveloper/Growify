@@ -6,7 +6,7 @@ import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import LottieModal from '~/src/components/AnimationModal';
 import CoinDrop from '~/src/assets/animations/coindrop.json';
 import Fire from '~/src/assets/animations/Fire.json';
-import { useStreak } from '~/src/hooks/useStreak'; // <-- your hook
+import { useStreak } from '~/src/hooks/useStreak';
 import { useCurrentLocation } from '~/src/hooks/useCurrentLocation';
 import { useReverseGeocoding } from '~/src/hooks/useReverseGeocoding';
 import AppText from '~/src/components/AppText';
@@ -22,14 +22,16 @@ import DailyProgressCard from '~/src/components/DailyProgressCard';
 import ActivitiesRow from '~/src/components/Activities';
 import GoalsFilter from '~/src/components/GoalsFilter';
 import GoalItems from '~/src/components/GoalItems';
+import { useStreakContext } from '~/src/providers/streakContext';
 const tasks = [
   { id: '1', label: 'Cycling', priority: 'low', status: 'done' },
   { id: '2', label: 'Reading', priority: 'medium', status: 'pending' },
   { id: '3', label: 'Yoga', priority: 'high', status: 'done' },
   { id: '4', label: 'Meditation', priority: 'low', status: 'pending' },
+  { id: '5', label: 'Meditation', priority: 'high', status: 'pending' },
 ];
 export default function Home() {
-  const { streak, coinsEarnedToday, checkStreak, coins } = useStreak();
+  const { streak, coinsEarnedToday, checkStreak, coins } = useStreakContext();
   const [showSplash, setShowSplash] = useState(false);
   const [showReward, setShowReward] = useState(false);
   const { location, errorMsg } = useCurrentLocation();
@@ -48,7 +50,8 @@ export default function Home() {
     };
     init();
   }, []);
-
+  const totalTasks = tasks.length;
+  const completedTasks = tasks.filter((task) => task.status === 'done').length;
   const [selectedPriority, setSelectedPriority] = useState<'all' | 'high' | 'medium' | 'low'>(
     'all'
   );
@@ -89,7 +92,7 @@ export default function Home() {
           <AppText className="font-INTER_BOLD text-2xl text-PRIMARY_DARK">Grow !</AppText>
         </AppText>
         <Divider height={sizes.spacing.lg} />
-        <DailyProgressCard totalTasks={5} completedTasks={2} />
+        <DailyProgressCard totalTasks={totalTasks} completedTasks={completedTasks} />
         <Divider height={sizes.spacing.lg} />
         <AppText className="font-INTER_SEMIBOLD text-lg text-TEXT_PRIMARY">Categories</AppText>
         <Divider height={sizes.spacing.sm} />

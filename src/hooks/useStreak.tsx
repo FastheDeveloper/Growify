@@ -74,9 +74,19 @@ export const useStreak = () => {
     }
   }, []);
 
+  const completeTask = useCallback(async () => {
+    const storedCoins = parseInt((await getValueFor(STORAGE_KEYS.COIN_BALANCE)) || '0', 10);
+    const updatedCoins = storedCoins + 1;
+
+    await save(STORAGE_KEYS.COIN_BALANCE, String(updatedCoins));
+    setCoins(updatedCoins);
+
+    return updatedCoins;
+  }, []);
+
   useEffect(() => {
     checkStreak(); // run once on mount
   }, [checkStreak]);
 
-  return { streak, coins, coinsEarnedToday, checkStreak };
+  return { streak, coins, coinsEarnedToday, checkStreak, completeTask };
 };

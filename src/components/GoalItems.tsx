@@ -7,6 +7,12 @@ import Cyclist from '../assets/svgs/Cyclist';
 import AppButton from './AppButton';
 import ClockUndone from '../assets/svgs/ClockUnDone';
 import { APP_COLOR } from '../constants/Color';
+import Yogi from '../assets/svgs/Yogi';
+import Lifter from '../assets/svgs/Lifter';
+import Reader from '../assets/svgs/Reader';
+import Meditator from '../assets/svgs/Meditator';
+import { useStreak } from '../hooks/useStreak';
+import { useStreakContext } from '../providers/streakContext';
 
 // Types
 type Priority = 'low' | 'medium' | 'high';
@@ -39,9 +45,22 @@ const PRIORITY_STYLES = {
   },
 };
 
+const LABEL_ICONS: Record<string, React.ReactNode> = {
+  Cycling: <Cyclist width={64} height={64} />,
+  Reading: <Reader width={64} height={64} />,
+  Yoga: <Yogi width={64} height={64} />,
+  Lifting: <Lifter width={64} height={64} />,
+  Meditation: <Meditator width={64} height={64} />, // example, reuse Yogi
+};
+
 const GoalItems: React.FC<GoalItemProps> = ({ priority, status, label }) => {
   const priorityStyle = PRIORITY_STYLES[priority];
-
+  const { coins, completeTask } = useStreakContext();
+  const handleTaskComplete = () => {
+    completeTask().then((newBalance) => {
+      console.log('New coin balance:', newBalance);
+    });
+  };
   return (
     <View className={`rounded-2xl px-4 py-2 ${priorityStyle.bg}`}>
       <View className="flex-row items-center justify-between">
@@ -65,7 +84,7 @@ const GoalItems: React.FC<GoalItemProps> = ({ priority, status, label }) => {
       <View className="flex-row justify-between pt-4">
         <View>
           <AppText className="pl-8 font-INTER_SEMIBOLD text-xl text-TEXT_PRIMARY">{label}</AppText>
-          <Cyclist width={64} height={64} />
+          {LABEL_ICONS[label] ?? null}
         </View>
 
         <View>
@@ -93,8 +112,9 @@ const GoalItems: React.FC<GoalItemProps> = ({ priority, status, label }) => {
                   label="Claim Reward"
                   className="bg-white"
                   textStyle={{ color: 'black' }}
+                  onPress={handleTaskComplete}
                 />
-                <AppButton label="Completed" />
+                {/* <AppButton label="Completed" /> */}
               </>
             ) : (
               <AppButton label="Mark as Done" />
